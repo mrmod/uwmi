@@ -1,55 +1,13 @@
 package main
 
 import (
-	"net/http"
-	"strings"
-
 	"github.com/gorilla/mux"
+	"google.golang.org/appengine"
 )
 
-// Provide the ID for the request
-func requestVar(request *http.Request, name string) string {
-	return mux.Vars(request)[strings.ToLower(name)]
-}
-
-/*
-Projects Feature
-*/
-// ProjectsHandler Index handler
-func ProjectsHandler(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-// ProjectHandler Project handler
-func ProjectHandler(writer http.ResponseWriter, request *http.Request) {
-}
-
-/*
-Tasks Feature
-*/
-// TasksHandler Index router
-func TasksHandler(writer http.ResponseWriter, request *http.Request) {
-
-}
-
-func TaskHandler(writer http.ResponseWriter, request *http.Request) {}
-
-/*
-Developers Feature
-*/
-// DevelopersHandler Index router
-func DevelopersHandler(writer http.ResponseWriter, request *http.Request) {
-}
-func DeveloperHandler(writer http.ResponseWriter, request *http.Request) {}
-
-/*
-Docs Feature
-*/
-// DocsHandler Index router
-func DocsHandler(writer http.ResponseWriter, request *http.Request) {}
-func DocHandler(writer http.ResponseWriter, request *http.Request)  {}
-
 func main() {
+	appengine.Main()
+	// See api.go for handlers
 	router := mux.NewRouter()
 	// Projects
 	projectsRouter := router.PathPrefix("/api/projects").Subrouter()
