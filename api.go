@@ -1,13 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 
 	"github.com/gorilla/mux"
@@ -90,8 +90,8 @@ type Doc struct {
 }
 
 // Save save a project to Datastore
-func (self *Project) Save(request *http.Request) {
-	context := appengine.NewContext(request)
+func (self *Project) Save() {
+	context := context.Background()
 
 	projectKey, err := datastore.Put(context,
 		datastore.NewIncompleteKey(context, ProjectKind, nil),
@@ -104,11 +104,12 @@ func (self *Project) Save(request *http.Request) {
 	}
 
 	self.Key = projectKey.IntID()
+	fmt.Printf("Created: %#v\n", self)
 }
 
-func (self Project) GetByKey(request *http.Request) Project {
+func (self Project) One() Project {
 	var project Project
-	context := appengine.NewContext(request)
+	context := context.Background()
 
 	projectKey := datastore.NewKey(context, ProjectKind, dsEmptyStringID, self.Key, nil)
 	if err := datastore.Get(context, projectKey, &project); err != nil {
