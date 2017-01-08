@@ -121,22 +121,53 @@ func (self Project) One() Project {
 
 // ProjectsHandler Index handler
 func ProjectsHandler(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("ProjectsHandler")
+}
 
+// ProjectCreateHandler Create handler
+func ProjectCreateHandler(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("ProjectCreateHandler")
+	project, err := NewProject(request)
+	if err == nil {
+		project.Save()
+		JSON(writer, project)
+		return
+	}
+	ServerError(writer, err)
 }
 
 // ProjectHandler Project handler
 func ProjectHandler(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("ProjectHandler")
+}
+
+// ProjectUpdateHandler Update handler
+func ProjectUpdateHandler(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("ProjectUpdateHandler")
+}
+
+// ProjectDeleteHandler Delete handler
+func ProjectDeleteHandler(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("ProjectDeleteHandler")
 }
 
 /*
 Tasks Feature
 */
-// TasksHandler Index router
-func TasksHandler(writer http.ResponseWriter, request *http.Request) {
+// TasksHandler Index handler
+func TasksHandler(writer http.ResponseWriter, request *http.Request) {}
 
-}
-
+// TaskHandler Task handler
 func TaskHandler(writer http.ResponseWriter, request *http.Request) {}
+
+// TaskCreateHandler Create handler
+func TaskCreateHandler(writer http.ResponseWriter, request *http.Request) {}
+
+// TaskDeleteHandler Delete handler
+func TaskDeleteHandler(writer http.ResponseWriter, request *http.Request) {}
+
+// TaskUpdateHandler Update handler
+func TaskUpdateHandler(writer http.ResponseWriter, request *http.Request) {}
 
 /*
 Developers Feature

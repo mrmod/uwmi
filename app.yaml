@@ -1,2 +1,3 @@
 runtime: go
+api_version: 1
 env: flex
