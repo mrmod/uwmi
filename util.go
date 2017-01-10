@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 )
 
 func JSON(writer http.ResponseWriter, v interface{}) {
@@ -21,4 +23,12 @@ func ServerError(writer http.ResponseWriter, err error) {
 
 func Unauthorized(writer http.ResponseWriter, v interface{}) {
 	writer.WriteHeader(http.StatusUnauthorized)
+}
+
+func ParseTime(timeString string) time.Time {
+	t, err := time.Parse(time.RFC3339, timeString)
+	if err != nil {
+		log.Println("Error parsing time:", err)
+	}
+	return t
 }

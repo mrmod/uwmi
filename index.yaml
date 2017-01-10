@@ -1,0 +1,6 @@
+indexes:
+
+- kind: Project
+- kind: Task
+- kind: Developer
+- kind: Doc
