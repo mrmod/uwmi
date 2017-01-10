@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -57,15 +56,16 @@ func TestTasks(t *testing.T) {
 	project := projectFactory()
 	project.Save(ctx)
 	time.Sleep(100 * time.Millisecond)
-	task := Task{Description: "Something", ProjectKey: project.Key}
+	task := Task{Description: "Something", Project: &project}
 	if err := task.Save(ctx); err != nil {
 		t.Error("Failed to save", err)
 	}
 	time.Sleep(100 * time.Millisecond)
-	_, err := project.AllTasks(ctx)
+	err := project.AllTasks(ctx)
 	if err != nil {
 		t.Error("Expected no errors: ", err)
 	}
+
 	if len(project.Tasks) < 1 {
 		t.Error("Expected 1 task")
 	}
@@ -75,7 +75,8 @@ func TestSaveTask(t *testing.T) {
 	ctx, _, _ := aetest.NewContext()
 	project := projectFactory()
 	project.Save(ctx)
-	task := Task{Description: "Something", ProjectKey: project.Key}
-	task.Save(ctx)
-	fmt.Printf("Task: #%v\n", task)
+	task := Task{Description: "Something", Project: &project}
+	if err := task.Save(ctx); err != nil {
+		t.Error("Expecte to save a task,", err)
+	}
 }

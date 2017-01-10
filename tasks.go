@@ -13,8 +13,8 @@ import (
 
 // Task Describes something to do. A task can only be given to one developer
 type Task struct {
-	Key        int64 `json:"key"`
-	ProjectKey int64 `datastore:"projectKey" json:"projectKey"`
+	Key     int64    `json:"key"`
+	Project *Project `datastore:"-" json:"project"`
 	// Description of the task
 	Description string `datastore:"description,noindex" json:"description"`
 	// Effort I dunno, maybe this is stupid
@@ -29,7 +29,7 @@ type Task struct {
 	Touched string `datastore:"touched" json:"touched"`
 }
 
-func NewTask(request *http.Request, projectKey *datastore.Key) (Task, error) {
+func NewTask(request *http.Request, project *Project) (Task, error) {
 	var task Task
 	defer request.Body.Close()
 	body, err := ioutil.ReadAll(request.Body)
@@ -38,14 +38,14 @@ func NewTask(request *http.Request, projectKey *datastore.Key) (Task, error) {
 		return task, err
 	}
 
-	task.ProjectKey = projectKey.IntID()
+	task.Project = project
 	task.Created = time.Now().UTC().Format(time.RFC3339)
 	task.Touched = task.Created
 	return task, err
 }
 
 func (self *Task) Save(ctx context.Context) error {
-	key, err := Save(ctx, TaskKind, self, nil)
+	key, err := Save(ctx, TaskKind, self, self.Project.DatastoreKey(ctx))
 	if err != nil {
 		return err
 	}
@@ -59,5 +59,5 @@ func (self *Task) One(ctx context.Context) error {
 }
 
 func (self Task) DatastoreKey(ctx context.Context) *datastore.Key {
-	return datastore.NewKey(ctx, TaskKind, "", self.Key, nil)
+	return datastore.NewKey(ctx, TaskKind, "", self.Key, self.Project.DatastoreKey(ctx))
 }

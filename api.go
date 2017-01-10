@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"google.golang.org/appengine"
@@ -30,34 +29,6 @@ Projects Feature
 */
 // DatastoreEntity Is attached to Google datastore
 type DatastoreEntity struct {
-}
-
-// Developer is anyone that works on something
-type Developer struct {
-	Key int64 `json:"key"`
-	// Projects the developer is a part of
-	Projects []Project `datastore:"-" json:"projects"`
-	// Tasks through projects
-	Tasks []Task `datastore:"-" json:"tasks"`
-	// FacebookID FacebookID
-	FacebookID string `datastore:"facebookid" json:"facebookid"`
-	// GoogleID GoogleID
-	GoogleID string `datastore:"googleid" json:"googleid"`
-	Created  string `datastore:"created" json:"created"`
-	// Touched The last time anything happened
-	Touched string `datastore:"touched" json:"touched"`
-}
-
-// Doc is a thing with a URL
-type Doc struct {
-	Key int64 `json:"key"`
-	// URL of the resource
-	URL *url.URL `datastore:"url,noindex" json:"url"`
-	// Description of what this is
-	Description string `datastore:"description,noindex" json:"description"`
-	Created     string `datastore:"created" json:"created"`
-	// Touched The last time anything happened
-	Touched string `datastore:"touched" json:"touched"`
 }
 
 // ProjectsHandler Index handler

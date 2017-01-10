@@ -37,10 +37,14 @@ func NewProject(request *http.Request) (Project, error) {
 	body, err := ioutil.ReadAll(request.Body)
 
 	if err == nil {
-		err = json.Unmarshal(body, &project)
-		return project, err
+		if err = json.Unmarshal(body, &project); err != nil {
+			return project, err
+		}
 	}
+
 	// Set created and touched time to now
+	project.Tasks = []Task{}
+	project.Developers = []Developer{}
 	project.Created = time.Now().UTC().Format(time.RFC3339)
 	project.Touched = project.Created
 	return project, err
@@ -83,18 +87,44 @@ func (self *Project) Delete(ctx context.Context) error {
 	return datastore.Delete(ctx, key)
 }
 
-func (self *Project) AllTasks(ctx context.Context) ([]Task, error) {
+func (self *Project) AllTasks(ctx context.Context) error {
 	log.Println("Tasks ", self.Key)
-	var tasks []Task
-	keys, err := datastore.NewQuery(TaskKind).Filter("projectKey =", self.Key).GetAll(ctx, &tasks)
+	self.Tasks = []Task{}
+
+	keys, err := datastore.NewQuery(TaskKind).Ancestor(self.DatastoreKey(ctx)).GetAll(ctx, &self.Tasks)
 	if err != nil {
-		return tasks, err
+		return err
+	}
+
+	for i, key := range keys {
+		self.Tasks[i].Key = key.IntID()
+	}
+	return nil
+}
+
+func (self *Project) AllDevelopers(ctx context.Context) error {
+	self.Developers = []Developer{}
+	keys, err := datastore.NewQuery(DeveloperKind).Ancestor(self.DatastoreKey(ctx)).GetAll(ctx, &self.Developers)
+	if err != nil {
+		return err
 	}
 	for i, key := range keys {
-		tasks[i].Key = key.IntID()
+		self.Developers[i].Key = key.IntID()
 	}
-	self.Tasks = tasks
-	return tasks, nil
+	return nil
+}
+
+func (self *Project) AllDocs(ctx context.Context) error {
+	self.Docs = []Doc{}
+	keys, err := datastore.NewQuery(DeveloperKind).Ancestor(self.DatastoreKey(ctx)).GetAll(ctx, &self.Docs)
+	if err != nil {
+		return err
+	}
+	for i, key := range keys {
+		self.Docs[i].Key = key.IntID()
+	}
+	return nil
+
 }
 
 // CreateTime
