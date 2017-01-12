@@ -29,6 +29,21 @@ type Project struct {
 	Touched string `datastore:"touched" json:"touched"`
 }
 
+// AllProjects Returns all ProjectKind objects
+func AllProjects(ctx context.Context) (projects []Project) {
+	keys, err := datastore.NewQuery(ProjectKind).GetAll(ctx, &projects)
+
+	if err != nil {
+		log.Println("Error fetching all projects:", err)
+		return
+	}
+
+	for i, key := range keys {
+		projects[i].Key = key.IntID()
+	}
+	return
+}
+
 // NewProject Created from an HTTP request
 func NewProject(request *http.Request) (Project, error) {
 	var project Project
@@ -47,6 +62,7 @@ func NewProject(request *http.Request) (Project, error) {
 	project.Developers = []Developer{}
 	project.Created = time.Now().UTC().Format(time.RFC3339)
 	project.Touched = project.Created
+	project.Key = requestVarInt64(request, ProjectResourceID)
 	return project, err
 }
 
@@ -64,13 +80,14 @@ func (self *Project) Save(ctx context.Context) error {
 // One project by Key
 func (self *Project) One(ctx context.Context) error {
 	key := datastore.NewKey(ctx, ProjectKind, "", self.Key, nil)
-	return One(ctx, self, key)
+	return datastore.Get(ctx, key, self)
 }
 
 // AllByName all projects matching this name
 func (self *Project) AllByName(ctx context.Context) ([]Project, error) {
 	log.Println("Finding project by name ", self.Name)
 	var projects []Project
+
 	keys, err := datastore.NewQuery(ProjectKind).Filter("name =", self.Name).GetAll(ctx, &projects)
 	if err != nil {
 		return projects, err

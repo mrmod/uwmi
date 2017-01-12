@@ -33,15 +33,15 @@ func main() {
 	// projectsRouter.StrictSlash(NoTrailingSlashRequired)
 	projectsRouter.StrictSlash(NoTrailingSlashRequired)
 	projectsRouter.HandleFunc("/", ProjectsHandler).Methods("GET")
-	projectsRouter.HandleFunc("/{project}", ProjectHandler).Methods("GET")
+	projectsRouter.HandleFunc("/{projectKey}", ProjectHandler).Methods("GET")
 	projectsRouter.HandleFunc("/", ProjectCreateHandler).Methods("POST")
-	projectsRouter.HandleFunc("/{project}", ProjectUpdateHandler).Methods("PUT")
-	projectsRouter.HandleFunc("/{project}", ProjectDeleteHandler).Methods("DELETE")
+	projectsRouter.HandleFunc("/{projectKey}", ProjectUpdateHandler).Methods("PUT")
+	projectsRouter.HandleFunc("/{projectKey}", ProjectDeleteHandler).Methods("DELETE")
 	// Tasks SubRoute
-	projectsRouter.HandleFunc("/{project}/tasks", TasksHandler).Methods("GET")
-	projectsRouter.HandleFunc("/{project}/tasks", TaskCreateHandler).Methods("POST")
-	projectsRouter.HandleFunc("/{project}/tasks/{task}", TaskUpdateHandler).Methods("PUT")
-	projectsRouter.HandleFunc("/{project}/tasks/{task}", TaskDeleteHandler).Methods("DELETE")
+	projectsRouter.HandleFunc("/{projectKey}/tasks", TasksHandler).Methods("GET")
+	projectsRouter.HandleFunc("/{projectKey}/tasks", TaskCreateHandler).Methods("POST")
+	projectsRouter.HandleFunc("/{projectKey}/tasks/{taskKey}", TaskUpdateHandler).Methods("PUT")
+	projectsRouter.HandleFunc("/{projectKey}/tasks/{taskKey}", TaskDeleteHandler).Methods("DELETE")
 
 	// Developers
 	developersRouter := router.PathPrefix("/api/developers").Subrouter()

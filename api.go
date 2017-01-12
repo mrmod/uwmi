@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
 
 	"github.com/gorilla/mux"
 )
@@ -16,6 +19,11 @@ const (
 	DeveloperKind = "developer"
 	DocKind       = "doc"
 
+	ProjectResourceID   = "projectKey"
+	TaskResourceID      = "taskKey"
+	DeveloperResourceID = "developerKey"
+	DocResourceID       = "docKey"
+
 	dsEmptyStringID = ""
 )
 
@@ -24,62 +32,174 @@ func requestVar(request *http.Request, name string) string {
 	return mux.Vars(request)[strings.ToLower(name)]
 }
 
-/*
-Projects Feature
-*/
-// DatastoreEntity Is attached to Google datastore
-type DatastoreEntity struct {
+// RequetVarAsInt
+func requestVarInt64(request *http.Request, name string) int64 {
+	v := requestVar(request, name)
+	i, err := strconv.ParseInt(v, 10, 64)
+	if err != nil {
+		log.Printf("Error converting %s to int: %s\n", name, err)
+	}
+	return i
 }
 
 // ProjectsHandler Index handler
 func ProjectsHandler(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("ProjectsHandler")
+	projects := AllProjects(request.Context())
+	JSON(writer, projects)
 }
 
 // ProjectCreateHandler Create handler
 func ProjectCreateHandler(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("ProjectCreateHandler")
-	project, err := NewProject(request)
-	if err == nil {
+	if project, err := NewProject(request); err != nil {
+		ServerError(writer, err)
+	} else {
 		project.Save(appengine.NewContext(request))
 		JSON(writer, project)
-		return
 	}
-	ServerError(writer, err)
 }
 
 // ProjectHandler Project handler
 func ProjectHandler(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("ProjectHandler")
+	key := requestVarInt64(request, ProjectResourceID)
+	project := Project{Key: key}
+	if err := project.One(request.Context()); err != nil {
+		if err == datastore.ErrNoSuchEntity {
+			NotFoundError(writer, ProjectKind, key, err)
+		} else {
+			ServerError(writer, err)
+		}
+	} else {
+		JSON(writer, project)
+	}
 }
 
 // ProjectUpdateHandler Update handler
 func ProjectUpdateHandler(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("ProjectUpdateHandler")
+	project, err := NewProject(request)
+	if err != nil {
+		BadRequest(writer, err)
+		return
+	}
+
+	if err := project.Save(request.Context()); err != nil {
+		ServerError(writer, err)
+	} else {
+		JSON(writer, project)
+	}
 }
 
 // ProjectDeleteHandler Delete handler
 func ProjectDeleteHandler(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("ProjectDeleteHandler")
+	project, err := NewProject(request)
+	if err != nil {
+		BadRequest(writer, err)
+		return
+	}
+	if err := project.Delete(request.Context()); err != nil {
+		ServerError(writer, err)
+	}
+	writer.WriteHeader(http.StatusAccepted)
 }
 
 /*
 Tasks Feature
 */
 // TasksHandler Index handler
-func TasksHandler(writer http.ResponseWriter, request *http.Request) {}
+func TasksHandler(writer http.ResponseWriter, request *http.Request) {
+	project, err := NewProject(request)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+	if err := project.AllTasks(request.Context()); err != nil {
+		ServerError(writer, err)
+	} else {
+		JSON(writer, project.Tasks)
+		return
+	}
+}
 
 // TaskHandler Task handler
-func TaskHandler(writer http.ResponseWriter, request *http.Request) {}
+func TaskHandler(writer http.ResponseWriter, request *http.Request) {
+	project, err := NewProject(request)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+	task, err := NewTask(request, &project)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	JSON(writer, task)
+}
 
 // TaskCreateHandler Create handler
-func TaskCreateHandler(writer http.ResponseWriter, request *http.Request) {}
+func TaskCreateHandler(writer http.ResponseWriter, request *http.Request) {
+	project, err := NewProject(request)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	task, err := NewTask(request, &project)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	if err = task.Save(request.Context()); err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	JSON(writer, task)
+}
 
 // TaskDeleteHandler Delete handler
-func TaskDeleteHandler(writer http.ResponseWriter, request *http.Request) {}
+func TaskDeleteHandler(writer http.ResponseWriter, request *http.Request) {
+	project, err := NewProject(request)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	task, err := NewTask(request, &project)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	if err := task.Delete(request.Context()); err != nil {
+		ServerError(writer, err)
+		return
+	}
+	writer.WriteHeader(http.StatusAccepted)
+}
 
 // TaskUpdateHandler Update handler
-func TaskUpdateHandler(writer http.ResponseWriter, request *http.Request) {}
+func TaskUpdateHandler(writer http.ResponseWriter, request *http.Request) {
+	project, err := NewProject(request)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	task, err := NewTask(request, &project)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	if err := task.Save(request.Context()); err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	JSON(writer, task)
+}
 
 /*
 Developers Feature

@@ -41,6 +41,7 @@ func NewTask(request *http.Request, project *Project) (Task, error) {
 	task.Project = project
 	task.Created = time.Now().UTC().Format(time.RFC3339)
 	task.Touched = task.Created
+	task.Key = requestVarInt64(request, TaskResourceID)
 	return task, err
 }
 
@@ -56,6 +57,10 @@ func (self *Task) Save(ctx context.Context) error {
 
 func (self *Task) One(ctx context.Context) error {
 	return One(ctx, self, self.DatastoreKey(ctx))
+}
+
+func (self *Task) Delete(ctx context.Context) error {
+	return datastore.Delete(ctx, self.DatastoreKey(ctx))
 }
 
 func (self Task) DatastoreKey(ctx context.Context) *datastore.Key {

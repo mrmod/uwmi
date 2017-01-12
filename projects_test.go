@@ -22,6 +22,12 @@ func TestSave(t *testing.T) {
 func TestOne(t *testing.T) {
 	ctx, _, _ := aetest.NewContext()
 	project := projectFactory()
+
+	noProject := Project{Key: project.Key}
+	if err := noProject.One(ctx); err != nil {
+		t.Error("Expected an error, got none: ", err)
+	}
+
 	project.Save(ctx)
 
 	foundProject := Project{Key: project.Key}
@@ -48,6 +54,17 @@ func TestAllByName(t *testing.T) {
 	}
 	if key := projects[0].Key; key != project.Key {
 		t.Error("Expected the key", project.Key, "got", key)
+	}
+}
+
+func TestAllProjects(t *testing.T) {
+	ctx, _, _ := aetest.NewContext()
+	project := projectFactory()
+	project.Save(ctx)
+	time.Sleep(100 * time.Millisecond)
+	projects := AllProjects(ctx)
+	if l := len(projects); l < 1 {
+		t.Error("Expected to find at least one project")
 	}
 }
 
