@@ -28,6 +28,7 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(NoTrailingSlashRequired)
 	router.NotFoundHandler = NotFoundHandler{}
+
 	// Projects
 	projectsRouter := router.PathPrefix("/api/projects").Subrouter()
 	// projectsRouter.StrictSlash(NoTrailingSlashRequired)
@@ -54,6 +55,12 @@ func main() {
 	docsRouter.StrictSlash(NoTrailingSlashRequired)
 	docsRouter.HandleFunc("/", DocsHandler).Methods("GET", "POST")
 	docsRouter.HandleFunc("/{doc}", DocHandler).Methods("GET", "PUT", "DELETE")
+
+	// UI
+	router.PathPrefix("/public").Methods("GET").Handler(
+		http.StripPrefix("/public/", http.FileServer(http.Dir("./src/ui/public/"))))
+	router.Path("/").Methods("GET").Handler(http.FileServer(http.Dir("./src/ui")))
+
 	fmt.Println("Registered all routes")
 	// appengine.Main()
 	if err := http.ListenAndServe(":"+port, router); err != nil {

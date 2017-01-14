@@ -18,7 +18,9 @@ type DeveloperProject struct {
 
 // Developer is anyone that works on something
 type Developer struct {
-	Key int64 `json:"key"`
+	Key   int64  `json:"key"`
+	Name  string `datastore:"name" json:"name"`
+	Email string `datastore:"email" json:"email"`
 	// Projects the developer is a part of
 	Projects []Project `datastore:"-" json:"projects"`
 	// Tasks through projects
@@ -48,6 +50,18 @@ func NewDeveloper(request *http.Request) (Developer, error) {
 	developer.Touched = developer.Created
 
 	return developer, nil
+}
+
+func AllDevelopers(ctx context.Context) ([]Developer, error) {
+	var developers []Developer
+	keys, err := datastore.NewQuery(DeveloperKind).GetAll(ctx, developers)
+	if err != nil {
+		return developers, err
+	}
+	for i, key := range keys {
+		developers[i].Key = key.IntID()
+	}
+	return developers, err
 }
 
 // Save Save the developer

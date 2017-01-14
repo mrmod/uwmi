@@ -206,8 +206,41 @@ Developers Feature
 */
 // DevelopersHandler Index router
 func DevelopersHandler(writer http.ResponseWriter, request *http.Request) {
+	developers, err := AllDevelopers(request.Context())
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+	JSON(writer, developers)
 }
-func DeveloperHandler(writer http.ResponseWriter, request *http.Request) {}
+
+// DeveloperCreateHandler create handler
+func DeveloperCreateHandler(writer http.ResponseWriter, request *http.Request) {
+	// TODO: Is a ServerError correct? Could this have been a malformed request?
+	developer, err := NewDeveloper(request)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	if err := developer.Save(request.Context()); err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	JSON(writer, developer)
+}
+
+// DeveloperHandler Show handler
+func DeveloperHandler(writer http.ResponseWriter, request *http.Request) {
+	developer, err := NewDeveloper(request)
+	if err != nil {
+		ServerError(writer, err)
+		return
+	}
+
+	JSON(writer, developer)
+}
 
 /*
 Docs Feature
