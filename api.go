@@ -7,10 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-
-	"github.com/gorilla/mux"
 )
 
 const (
@@ -44,7 +43,16 @@ func requestVarInt64(request *http.Request, name string) int64 {
 
 // ProjectsHandler Index handler
 func ProjectsHandler(writer http.ResponseWriter, request *http.Request) {
-	projects := AllProjects(request.Context())
+	// var ctx context.Context
+	// log.Println("Projects Index")
+	// if v, ok := gctx.GetOk(request, "Context"); ok {
+	// 	ctx = v.(context.Context)
+	// } else {
+	// 	ctx = appengine.NewContext(request)
+	// }
+	c := request.Context()
+	log.Println("Context:", c)
+	projects := AllProjects(appengine.NewContext(request))
 	JSON(writer, projects)
 }
 
@@ -63,7 +71,7 @@ func ProjectCreateHandler(writer http.ResponseWriter, request *http.Request) {
 func ProjectHandler(writer http.ResponseWriter, request *http.Request) {
 	key := requestVarInt64(request, ProjectResourceID)
 	project := Project{Key: key}
-	if err := project.One(request.Context()); err != nil {
+	if err := project.One(appengine.NewContext(request)); err != nil {
 		if err == datastore.ErrNoSuchEntity {
 			NotFoundError(writer, ProjectKind, key, err)
 		} else {
@@ -82,7 +90,7 @@ func ProjectUpdateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := project.Save(request.Context()); err != nil {
+	if err := project.Save(appengine.NewContext(request)); err != nil {
 		ServerError(writer, err)
 	} else {
 		JSON(writer, project)
@@ -96,7 +104,7 @@ func ProjectDeleteHandler(writer http.ResponseWriter, request *http.Request) {
 		BadRequest(writer, err)
 		return
 	}
-	if err := project.Delete(request.Context()); err != nil {
+	if err := project.Delete(appengine.NewContext(request)); err != nil {
 		ServerError(writer, err)
 	}
 	writer.WriteHeader(http.StatusAccepted)
@@ -112,7 +120,7 @@ func TasksHandler(writer http.ResponseWriter, request *http.Request) {
 		ServerError(writer, err)
 		return
 	}
-	if err := project.AllTasks(request.Context()); err != nil {
+	if err := project.AllTasks(appengine.NewContext(request)); err != nil {
 		ServerError(writer, err)
 	} else {
 		JSON(writer, project.Tasks)
@@ -150,7 +158,7 @@ func TaskCreateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err = task.Save(request.Context()); err != nil {
+	if err = task.Save(appengine.NewContext(request)); err != nil {
 		ServerError(writer, err)
 		return
 	}
@@ -172,7 +180,7 @@ func TaskDeleteHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := task.Delete(request.Context()); err != nil {
+	if err := task.Delete(appengine.NewContext(request)); err != nil {
 		ServerError(writer, err)
 		return
 	}
@@ -193,7 +201,7 @@ func TaskUpdateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := task.Save(request.Context()); err != nil {
+	if err := task.Save(appengine.NewContext(request)); err != nil {
 		ServerError(writer, err)
 		return
 	}
@@ -206,7 +214,7 @@ Developers Feature
 */
 // DevelopersHandler Index router
 func DevelopersHandler(writer http.ResponseWriter, request *http.Request) {
-	developers, err := AllDevelopers(request.Context())
+	developers, err := AllDevelopers(appengine.NewContext(request))
 	if err != nil {
 		ServerError(writer, err)
 		return
@@ -223,7 +231,7 @@ func DeveloperCreateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := developer.Save(request.Context()); err != nil {
+	if err := developer.Save(appengine.NewContext(request)); err != nil {
 		ServerError(writer, err)
 		return
 	}

@@ -28,7 +28,6 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(NoTrailingSlashRequired)
 	router.NotFoundHandler = NotFoundHandler{}
-
 	// Projects
 	projectsRouter := router.PathPrefix("/api/projects").Subrouter()
 	// projectsRouter.StrictSlash(NoTrailingSlashRequired)
